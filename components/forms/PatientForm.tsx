@@ -12,6 +12,7 @@ import SubmitButton from "../SubmitButton";
 import { useState } from "react";
 import { UserFormValidation } from "@/lib/validation";
 import { useRouter } from "next/navigation";
+import { createUser } from "@/lib/actions/patient.actions";
 
 export enum FormFieldType {
   INPUT = "input",
@@ -26,6 +27,7 @@ export enum FormFieldType {
 const PatientForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof UserFormValidation>>({
@@ -39,15 +41,16 @@ const PatientForm = () => {
     email,
     phone,
   }: z.infer<typeof UserFormValidation>) {
-    setIsLoading(true);
-    // try {
-    //   const userData = { name, email, phone };
-
-    //  // const user = await createUser(userData);
-    //   if (user) router.push(`/patients/${user.$id}/register`);
-    // } catch (error) {
-    //   console.log(error);
-    // }
+    // setIsLoading(true);
+    try {
+      const userData = { name, email, phone };
+      const user = await createUser(userData);
+      console.log({ user });
+      if (user) router.push(`/patients/${user.$id}/register`);
+    } catch (error: any) {
+      console.error({ userErrorHai: error });
+      setErrorMessage(error?.message ?? "Something went wrong");
+    }
   }
 
   return (
@@ -57,7 +60,7 @@ const PatientForm = () => {
           <h1 className="header">Hi there 👋 </h1>
           <p className="text-dark-700"> Schedule your first appointment.</p>
         </section>
-
+        {errorMessage ? <div>{errorMessage}</div> : null}
         <CustomFormField
           fieldType={FormFieldType.INPUT}
           control={form.control}
